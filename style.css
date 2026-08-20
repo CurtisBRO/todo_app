@@ -54,6 +54,16 @@ body {
     padding: 10px;
     background: white;
     gap: 10px;
+    width: 100%;
+}
+
+#chat-form #user-input {
+    flex: 1;
+    min-width: 0;
+}
+
+#chat-form button {
+    flex-shrink: 0;
 }
 
 h1 {
