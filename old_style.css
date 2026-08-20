@@ -1,0 +1,113 @@
+/* style.css */
+
+/* Modern Sans-Serif Font & Background */
+body {
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    background-color: #f8f9fa;
+    color: #333;
+    margin: 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+h1 {
+    color: #4a5568;
+    font-weight: 300;
+    letter-spacing: -1px;
+}
+
+/* Container / Button Styling */
+.header-actions {
+    width: 100%;
+    max-width: 800px;
+    margin-bottom: 20px;
+}
+
+button {
+    cursor: pointer;
+    border: none;
+    border-radius: 6px;
+    padding: 8px 16px;
+    font-size: 14px;
+    transition: all 0.2s ease;
+    background-color: #edf2f7;
+    color: #4a5568;
+}
+
+button:hover {
+    background-color: #e2e8f0;
+}
+
+/* Primary "New To-Do" Button */
+.btn-primary {
+    background-color: #667eea;
+    color: white;
+    font-weight: 600;
+}
+
+.btn-primary:hover {
+    background-color: #5a67d8;
+}
+
+/* Table Styling */
+table {
+    width: 80%; /* Now always 80% of the browser width */
+    min-width: 600px; /* Prevents it from getting TOO tiny on mobile */
+    border-collapse: collapse;
+    background-color: white;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 50px; /* Just a bit of breathing room at the bottom */
+}
+
+thead {
+    background-color: #f1f5f9;
+}
+
+th {
+    text-align: left;
+    padding: 15px;
+    font-weight: 600;
+    color: #64748b;
+    text-transform: uppercase;
+    font-size: 12px;
+    letter-spacing: 0.05em;
+}
+
+td {
+    padding: 15px;
+    border-bottom: 1px solid #f1f5f9;
+    font-size: 15px;
+}
+
+td:last-child {
+    white-space: nowrap; 
+    width: 1%; /* This trick forces the column to be as narrow as possible for the buttons */
+}
+
+tr:last-child td {
+    border-bottom: none;
+}
+
+tr:hover {
+    background-color: #fafbfc;
+}
+
+/* Action buttons inside table */
+.btn-delete { color: #e53e3e; background: none; }
+.btn-delete:hover { background: #fff5f5; }
+
+.btn-toggle { color: #38a169; background: none; }
+.btn-toggle:hover { background: #f0fff4; }
+
+.btn-edit { color: #3182ce; background: none; }
+.btn-edit:hover { background: #ebf8ff; }
+
+/* Completion status styling */
+.status-check {
+    color: #38a169;
+    font-weight: bold;
+    font-size: 1.2rem;
+}

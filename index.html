@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI agent Demo</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body>
+    <h1>Curt's To-Do List with AI tool use agent</h1>
+    
+    <div class="header-actions">
+        <button class="btn-primary" onclick="addTask()">+ New To-Do</button>
+    </div>
+
+    <div id="top-panel">
+        <iframe src="/table" id="todo-frame" style="width: 100%; height: 350px; border: none;"></iframe>
+    </div>
+
+    <div id="bottom-panel">
+        <div id="chat-log">
+            <div class="ai-msg">Assistant: Hello! I'm ready to manage your tasks.</div>
+        </div>
+        
+        <form id="chat-form">
+            <input type="text" id="user-input" placeholder="e.g., 'Add a task for tomorrow'..." autocomplete="off">
+            <button type="submit">Send</button>
+        </form>
+    </div>
+
+    <script>
+        const chatForm = document.getElementById('chat-form');
+        const userInput = document.getElementById('user-input');
+        const chatLog = document.getElementById('chat-log');
+        const dbFrame = document.getElementById('todo-frame');
+
+	chatForm.addEventListener('submit', async (e) => {
+   	    e.preventDefault();
+	    const message = userInput.value.trim();
+    	    if (!message) return;
+
+    	    appendMessage('You: ' + message, 'user-msg');
+    	    userInput.value = '';
+
+    	    // Ensure appendMessage returns the ID of the div it just created!
+	    const thinkingId = appendMessage('Assistant: Thinking...', 'ai-msg');
+
+	    try {
+        	const response = await fetch('/chat', {
+            	    method: 'POST',
+            	    headers: { 'Content-Type': 'application/json' },
+            	    body: JSON.stringify({ message: message })
+        	});
+        	const data = await response.json();
+
+        	// Update text
+        	const aiBubble = document.getElementById(thinkingId);
+        	if (aiBubble) {
+            	    aiBubble.innerText = 'Assistant: ' + data.reply;
+        	}
+
+        	// Use the central refresh function we fixed earlier
+        	// This ensures the iframe ID and cache-busting are handled correctly
+        	if (typeof refreshTable === "function") {
+            	    refreshTable();
+        	}
+
+    	    } catch (err) {
+        	const aiBubble = document.getElementById(thinkingId);
+        	if (aiBubble) {
+            	    aiBubble.innerText = 'Assistant: Error communicating with server.';
+        	}
+    	    }
+	});	
+
+        function appendMessage(text, className) {
+            const msgDiv = document.createElement('div');
+            msgDiv.className = className;
+            msgDiv.innerText = text;
+            const id = 'msg-' + Date.now();
+            msgDiv.id = id;
+            chatLog.appendChild(msgDiv);
+            chatLog.scrollTop = chatLog.scrollHeight; 
+            return id;
+        }
+
+	window.loadTodos = function() {
+            const frame = document.getElementById('todo-frame');
+            if (frame) {
+	    // Option B: "Brute Force" reload (Guarantees the browser doesn't use cache)
+                frame.src = "/table";
+            }
+        };
+	
+	window.toggleTask = async function(id) {
+            // Stick with PATCH since your backend is ready for it!
+            const response = await fetch(`/todos/${id}/toggle`, { 
+                method: 'PATCH' 
+            });
+            if (response.ok) {
+		refreshTable();
+                }
+        };	
+
+	async function addTask() {
+    	    const task = prompt("What needs to be done?");
+    	    if (task) {
+        	const response = await fetch('/todos', {
+            	    method: 'POST',
+            	    headers: {'Content-Type': 'application/json'},
+            	    body: JSON.stringify({ task: task })
+        	});
+	    	if (response.ok) {
+            	    refreshTable(); // <--- Make sure this call is here!
+            	}
+    	    }
+	}        
+	window.deleteTask = async function(id) {
+            const response = await fetch(`/todos/${id}`, { 
+                method: 'DELETE' 
+            });
+
+            if (response.ok) {
+        	refreshTable();
+            }
+        };  
+
+	window.editTask = async function(id, currentTask, currentDate) {
+	    const newTask = prompt("Edit task:", currentTask);
+    	    if (newTask === null) return; // User cancelled
+
+    	    const newDate = prompt("Edit due date (YYYY-MM-DD):", currentDate || "");
+            if (newDate === null) return; // User cancelled
+
+            const response = await fetch(`/todos/${id}`, {
+        	method: 'PUT',
+        	headers: { 'Content-Type': 'application/json' },
+        	body: JSON.stringify({ 
+            	    task: newTask, 
+            	    due_date: newDate || null 
+        	})
+    	    });
+
+    	    if (response.ok) {
+    	    	refreshTable();
+	    }
+	};	
+
+ 
+	function refreshTable() {
+	    const frame = document.getElementById('todo-frame'); // Using your confirmed ID
+            if (frame) {
+                console.log("Triggering refresh...");
+                // The '?t=' part forces the browser to treat it as a brand new request
+                frame.src = "/table?t=" + new Date().getTime();
+            } else {
+                console.error("Critical Error: 'todo-frame' not found in the DOM.");
+              }
+        }
+</script>
+</body>
+</html>

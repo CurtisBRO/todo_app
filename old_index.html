@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Curt's To-Do List</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body>
+    <h1>Curt's To-Do List</h1>
+    
+    <div class="header-actions">
+        <button class="btn-primary" onclick="addTask()">+ New To-Do</button>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Done</th>
+                <th>Task</th>
+                <th>Due Date</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="todo-body"></tbody>
+    </table>
+
+    <script>
+        async function loadTodos() {
+            const res = await fetch('/todos');
+            const todos = await res.json();
+            const body = document.getElementById('todo-body');
+            body.innerHTML = todos.map(t => `
+                <tr>
+                    <td>${t.id}</td>
+                    <td>${t.completed ? '✓' : ''}</td>
+                    <td>${t.task}</td>
+                    <td>${t.due_date || 'None'}</td>
+                    <td>
+                        <button onclick="toggle(${t.id})">${t.completed ? 'UnDone' : 'Done'}</button>
+                        <button onclick="del(${t.id})">Delete</button>
+                        <button onclick="editTask(${t.id}, '${t.task}', '${t.due_date || ''}}')">Edit</button>
+                   </td>
+                </tr>
+            `).join('');
+        }
+
+        async function toggle(id) {
+            await fetch(`/todos/${id}/toggle`, { method: 'PATCH' });
+            loadTodos();
+        }
+
+        async function addTask() {
+            const task = prompt("What needs to be done?");
+            if (task) {
+                await fetch('/todos', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ task: task })
+                });
+                loadTodos();
+            }
+        }
+
+        async function del(id) {
+            await fetch(`/todos/${id}`, { method: 'DELETE' });
+            loadTodos();
+        }
+
+        async function editTask(id, currentTask, currentDate) {
+            const newTask = prompt("Edit task:", currentTask);
+            if (newTask === null) return; // User cancelled
+
+            const newDate = prompt("Edit due date (YYY-MM-DD):", currentDate || "");
+            if (newDate === null) return; // User cancelled
+
+            await fetch(`/todos/${id}`, {
+                    method: 'PUT',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ 
+                        task: newTask,
+                        due_date: newDate || null // Send null if string is empty
+                     })
+                });
+                loadTodos();
+            }
+
+        loadTodos();
+    </script>
+</body>
+</html>
